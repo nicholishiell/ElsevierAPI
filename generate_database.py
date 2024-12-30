@@ -94,7 +94,7 @@ def populate_journals_table(conn):
 		insert_journal = """INSERT INTO journal (title, publisher, issn, eissn)
 							VALUES (?, ?, ?, ?);"""
 		
-		conn.execute(insert_journal, (journal.title, journal.publisher, journal.issn, journal.eissn))
+		conn.execute(insert_journal, (journal['title'], journal['publisher'], journal['issn'], journal['eissn']))
 		
 	conn.commit()	
 

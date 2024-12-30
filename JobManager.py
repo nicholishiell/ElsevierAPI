@@ -25,17 +25,28 @@ class JobManager:
         job_id = result['job_id']
         query_results = result['query_results']['results']
         total_results = result['query_results']['total_results']
-       
-        if verbose:
-            print(f'Job {job_id} complete. {total_results} results found.')
+        skipped = result['query_results']['skipped']
+        status_code = int(result['query_results']['status_code'])       
+        final_index = result['query_results']['final_index']
         
-        for response_entry in query_results:          
-            if 'error' not in response_entry:
-                pprint(response_entry)
-                self.db_interface.insert_result(response_entry)
-              
-        self.db_interface.mark_job_complete(job_id)       
-   
+        if verbose:
+            print(f'Job {job_id} returned status {status_code}. {total_results} records found. {skipped} record(s) skipped')
+       
+        if status_code == 200:       
+            for response_entry in query_results: 
+                # an error will be present in a successful response if no articles match the query         
+                if 'error' not in response_entry:
+                    self.db_interface.insert_result(response_entry)
+                    
+                self.db_interface.mark_job_complete(job_id) 
+                
+        elif status_code == 429:
+            print('API limit reached.')
+            self.db_interface.mark_job_not_in_progress(job_id, final_index)   
+        else:
+            print('Error: ', status_code)
+            self.db_interface.mark_job_not_in_progress(job_id, final_index)
+            
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     def run_jobs(self):
@@ -45,13 +56,17 @@ class JobManager:
             while self.db_interface.incomplete_jobs():
                 
                 futures = []
+                
                 for session in self.sessions_list:
                     
+                    if not session.is_available():
+                        continue
+                                            
                     job_dict = self.db_interface.get_next_job()
                     
                     if job_dict is not None: 
                     
-                        future = executor.submit(session.run_query, job_dict)
+                        future = executor.submit(session.run_scopus_query, job_dict)
                         futures.append(future)
                         
                         self.db_interface.mark_job_in_progress(job_dict['job_id'])

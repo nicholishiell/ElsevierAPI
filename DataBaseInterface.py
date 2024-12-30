@@ -18,16 +18,10 @@ class DataBaseInterface:
                      key : str,
                      response_entry : dict) -> str:
         
-        # if type(response_entry) == dict:
+        if type(response_entry) == dict:
         
-        #     if key in response_entry.keys():
-        #         return response_entry[key]
-        # else:
-        #     print(type(response_entry))
-        #     print(response_entry)
-        
-        if key in response_entry.keys():
-            return response_entry[key]
+            if key in response_entry.keys():
+                return response_entry[key]
          
         return 'None'
 
@@ -42,7 +36,7 @@ class DataBaseInterface:
             surname = self.extract_item('surname', item)
             given_name = self.extract_item('given-name', item)
             authors += f'{surname}, {given_name}; '
-        
+                
         return authors
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -185,6 +179,19 @@ class DataBaseInterface:
 
         # Mark the job as in progress
         cursor.execute("UPDATE jobs SET in_progress = 1 WHERE id = ?", (job_id,))
+        self.db_conn.commit()
+        
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    def mark_job_not_in_progress(   self,
+                                    job_id : int,
+                                    current_index : int) -> None:
+        
+        cursor = self.db_conn.cursor()
+
+        # Mark the job as in progress
+        cursor.execute("UPDATE jobs SET in_progress = 0 WHERE id = ?", (job_id,))
+        cursor.execute("UPDATE jobs SET current_index = ? WHERE id = ?", (current_index, job_id,))
         self.db_conn.commit()
     
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

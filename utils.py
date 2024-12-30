@@ -2,22 +2,15 @@ import csv
 import requests
 from pprint import pprint
 
-from Journal import Journal
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# API_KEYS = ['5c2c30b984e5d89aac97203a39827ca2',
-#             '3abe91d1f1a867373283246fdb99c485',
-#             'f3ddb33fcba5c1d11acb8d98e123163b']
-
-API_KEYS = ['5c2c30b984e5d89aac97203a39827ca2']
 
 DATA_BASE_FILE_PATH = "database-files/test-db.db"
 
-URL_BASE = "https://api.elsevier.com/content/search/scopus?" 
-
 JOURNALS_FILE_PATH = './resources/journals.csv'
 KEYWORDS_FILE_PATH = './resources/keywords.txt'
+API_KEYS_FILE_PATH = './resources/api-keys.txt'
+
+URL_BASE = "https://api.elsevier.com/content/search/scopus?" 
 
 YEAR_START = 1999
 YEAR_END = 2025
@@ -35,6 +28,14 @@ ABSTRACT_RESPONSE_DICT_KEY = 'dc:description'
 KEYWORDS_RESPONSE_DICT_KEY = 'authkeywords'
 AUTHORS_RESPONSE_DICT_KEY = 'author'
 DOI_RESPONSE_DICT_KEY = 'prism:doi'
+
+REQUIRED_RESPONSE_KEYS = [  PUBLICATION_RESPONSE_DICT_KEY,
+                            DATE_RESPONSE_DICT_KEY,
+                            TITLE_RESPONSE_DICT_KEY,
+                            ABSTRACT_RESPONSE_DICT_KEY,
+                            KEYWORDS_RESPONSE_DICT_KEY,
+                            AUTHORS_RESPONSE_DICT_KEY,
+                            DOI_RESPONSE_DICT_KEY]
 
 RESPONSE_TOTAL_RESULTS_KEY = 'opensearch:totalResults'
 
@@ -58,11 +59,11 @@ def load_journals(file_path = JOURNALS_FILE_PATH):
         reader = csv.reader(file)
         
         for row in reader:
-            journals.append(Journal.from_dict({'title' : row[0],
-                                               'publisher' : row[1],
-                                               'issn' : row[2],
-                                               'eissn' : row[3]}))
-            
+            journals.append({'title' : row[0],
+                            'publisher' : row[1],
+                            'issn' : row[2],
+                            'eissn' : row[3]})
+
     return journals
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
